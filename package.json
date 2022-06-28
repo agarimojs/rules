@@ -1,0 +1,39 @@
+{
+  "name": "@agarimo/rules",
+  "version": "1.0.0",
+  "description": "OpenL-tablets like executor in javascript",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "eslint --fix . && jest --silent --coverage --maxWorkers=4 ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agarimojs/rules.git"
+  },
+  "author": {
+    "email": "jseijas@gmail.com",
+    "name": "Jesus Seijas"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/agarimojs/rules/issues"
+  },
+  "homepage": "https://github.com/agarimojs/rules#readme",
+  "devDependencies": {
+    "eslint": "^8.12.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-jest": "^26.1.3",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^27.5.1",
+    "prettier": "^2.6.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@agarimo/evaluator": "^1.0.2",
+    "exceljs": "^4.3.0"
+  }
+}
