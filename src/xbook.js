@@ -84,6 +84,43 @@ class XBook {
       }
     }
   }
+
+  toJSON() {
+    return this.tables.map((table) =>
+      Array.isArray(table) ? table : table.toJSON()
+    );
+  }
+
+  getInstanceOf(className) {
+    switch (className) {
+      case 'RulesTable':
+        return new RulesTable(this);
+      case 'DatatypeTable':
+        return new DatatypeTable(this);
+      case 'SpreadsheetTable':
+        return new SpreadsheetTable(this);
+      case 'MethodTable':
+        return new MethodTable(this);
+      default:
+        return undefined;
+    }
+  }
+
+  fromJSON(json) {
+    this.tables = [];
+    this.tablesByName = {};
+    for (let i = 0; i < json.length; i += 1) {
+      const current = json[i];
+      if (current.className) {
+        const instance = this.getInstanceOf(current.className);
+        instance.fromJSON(current);
+        this.tables.push(instance);
+        this.tablesByName[instance.name] = instance;
+      } else {
+        this.tables.push(current);
+      }
+    }
+  }
 }
 
 module.exports = XBook;

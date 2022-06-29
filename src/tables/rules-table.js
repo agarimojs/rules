@@ -2,7 +2,9 @@ class RulesTable {
   constructor(parent, table, isMulti = false) {
     this.parent = parent;
     this.isMulti = isMulti;
-    this.build(table);
+    if (table) {
+      this.build(table);
+    }
   }
 
   buildParams(paramsStr) {
@@ -248,6 +250,36 @@ class RulesTable {
 
   getFn() {
     return (...args) => this.execute(...args);
+  }
+
+  toJSON() {
+    return {
+      className: this.constructor.name,
+      isMulti: this.isMulti,
+      name: this.name,
+      type: this.type,
+      resultType: this.resultType,
+      params: this.params,
+      columnParams: this.columnParams,
+      rowParams: this.rowParams,
+      matrix: this.matrix,
+    };
+  }
+
+  fromJSON(data) {
+    this.isMulti = data.isMulti;
+    this.name = data.name;
+    this.type = data.type;
+    this.resultType = data.resultType;
+    this.params = data.params;
+    this.columnParams = data.columnParams;
+    this.rowParams = data.rowParams;
+    this.matrix = data.matrix;
+    this.paramsByName = {};
+    for (let i = 0; i < this.params.length; i += 1) {
+      const param = this.params[i];
+      this.paramsByName[param.name] = param;
+    }
   }
 }
 
