@@ -1,7 +1,9 @@
 class DatatypeTable {
   constructor(parent, table) {
     this.parent = parent;
-    this.build(table);
+    if (table) {
+      this.build(table);
+    }
   }
 
   build(table) {
@@ -17,6 +19,19 @@ class DatatypeTable {
         defValue,
       };
     }
+  }
+
+  toJSON() {
+    return {
+      className: this.constructor.name,
+      name: this.name,
+      params: this.params,
+    };
+  }
+
+  fromJSON(data) {
+    this.name = data.name;
+    this.params = data.params;
   }
 }
 

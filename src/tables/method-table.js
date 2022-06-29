@@ -3,7 +3,9 @@ const { evaluate, walkFunctionExecution } = require('@agarimo/evaluator');
 class MethodTable {
   constructor(parent, table) {
     this.parent = parent;
-    this.build(table);
+    if (table) {
+      this.build(table);
+    }
   }
 
   buildParams(paramsStr) {
@@ -14,6 +16,12 @@ class MethodTable {
       const name = tokens.length > 1 ? tokens[1] : tokens[0];
       this.params.push(name);
     }
+  }
+
+  buildFn() {
+    const context = {};
+    evaluate(this.script, context);
+    this.fn = context[this.name];
   }
 
   build(table) {
@@ -30,9 +38,8 @@ class MethodTable {
       script += `${table[i][0]}\n`;
     }
     script += `}`;
-    const context = {};
-    evaluate(script, context);
-    this.fn = context[this.name];
+    this.script = script;
+    this.buildFn();
   }
 
   buildContext(...args) {
@@ -58,6 +65,22 @@ class MethodTable {
 
   getFn() {
     return (...args) => this.execute(...args);
+  }
+
+  toJSON() {
+    return {
+      className: this.constructor.name,
+      name: this.name,
+      params: this.params,
+      script: this.script,
+    };
+  }
+
+  fromJSON(data) {
+    this.name = data.name;
+    this.params = data.params;
+    this.script = data.script;
+    this.buildFn();
   }
 }
 

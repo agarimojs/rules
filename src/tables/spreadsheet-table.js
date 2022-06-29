@@ -3,7 +3,9 @@ const { evaluate } = require('@agarimo/evaluator');
 class SpreadsheetTable {
   constructor(parent, table) {
     this.parent = parent;
-    this.build(table);
+    if (table) {
+      this.build(table);
+    }
   }
 
   buildParams(paramsStr) {
@@ -67,6 +69,25 @@ class SpreadsheetTable {
 
   getFn() {
     return (input) => this.execute(input);
+  }
+
+  toJSON() {
+    return {
+      className: this.constructor.name,
+      name: this.name,
+      params: this.params,
+      lines: this.lines,
+    };
+  }
+
+  fromJSON(data) {
+    this.name = data.name;
+    this.params = data.params;
+    this.lines = data.lines;
+    this.paramsByName = {};
+    for (let i = 0; i < this.params.length; i += 1) {
+      this.paramsByName[this.params[i].name] = this.params[i];
+    }
   }
 }
 
