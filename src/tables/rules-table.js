@@ -1,6 +1,7 @@
 class RulesTable {
-  constructor(parent, table) {
+  constructor(parent, table, isMulti = false) {
     this.parent = parent;
+    this.isMulti = isMulti;
     this.build(table);
   }
 
@@ -163,7 +164,7 @@ class RulesTable {
     return false;
   }
 
-  findRowIndex(paramValues) {
+  findRowIndexes(paramValues) {
     if (this.columnParams.length === 0) {
       return 0;
     }
@@ -185,10 +186,10 @@ class RulesTable {
         currentMatchIndexes.includes(x)
       );
     }
-    return matchIndexes[0];
+    return matchIndexes;
   }
 
-  findColumnIndex(paramValues) {
+  findColumnIndexes(paramValues) {
     if (this.rowParams.length === 0) {
       return 0;
     }
@@ -210,18 +211,24 @@ class RulesTable {
         currentMatchIndexes.includes(x)
       );
     }
-    return matchIndexes[0];
+    return matchIndexes;
   }
 
   executeContext(paramValues) {
-    const rowIndex = this.findRowIndex(paramValues);
-    const columnIndex = this.findColumnIndex(paramValues);
-    if (
-      rowIndex !== undefined &&
-      rowIndex !== -1 &&
-      columnIndex !== undefined &&
-      columnIndex !== -1
-    ) {
+    const rowIndexes = this.findRowIndexes(paramValues);
+    const columnIndexes = this.findColumnIndexes(paramValues);
+    if (this.isMulti) {
+      const results = new Set();
+      for (let i = 0; i < rowIndexes.length; i += 1) {
+        for (let j = 0; j < columnIndexes.length; j += 1) {
+          results.add(this.matrix[rowIndexes[i]][columnIndexes[j]]);
+        }
+      }
+      return [...results];
+    }
+    const rowIndex = rowIndexes[0];
+    const columnIndex = columnIndexes[0];
+    if (rowIndex >= 0 && columnIndex >= 0) {
       return this.matrix[rowIndex][columnIndex];
     }
     return undefined;
