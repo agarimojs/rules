@@ -37,6 +37,108 @@ class RulesTable {
     };
   }
 
+  static compileCondition(param, header) {
+    if (header === null) {
+      return {
+        type: 'true',
+      };
+    }
+    if (param.positionType === 'String') {
+      return {
+        type: 'equal',
+        value: header,
+      };
+    }
+    if (param.positionType === 'Integer' || param.positionType === 'Float') {
+      return {
+        type: 'equal',
+        value: parseFloat(header),
+      };
+    }
+    if (
+      param.positionType === 'IntRange' ||
+      param.positionType === 'FloatRange'
+    ) {
+      if (header.startsWith('<=')) {
+        return {
+          type: 'lessEqual',
+          value: parseFloat(header.slice(2)),
+        };
+      }
+      if (header.startsWith('>=')) {
+        return {
+          type: 'greaterEqual',
+          value: parseFloat(header.slice(2)),
+        };
+      }
+      if (header.startsWith('<')) {
+        return {
+          type: 'lessThan',
+          value: parseFloat(header.slice(1)),
+        };
+      }
+      if (header.startsWith('>')) {
+        return {
+          type: 'greaterThan',
+          value: parseFloat(header.slice(1)),
+        };
+      }
+      if (header.startsWith('[') || header.startsWith('(')) {
+        const result = {
+          type: 'range',
+        };
+        const left = header[0];
+        const right = header[header.length - 1];
+        const values = header
+          .slice(1, header.length - 1)
+          .split('..')
+          .map((x) => parseFloat(x));
+        result.typeLeft = left === '[' ? 'greaterThan' : 'greaterEqual';
+        result.typeRight = right === ']' ? 'lessThan' : 'lessEqual';
+        result.valueLeft = parseFloat(values[0]);
+        result.valueRight = parseFloat(values[1]);
+        return result;
+      }
+      return {
+        type: 'equal',
+        value: parseFloat(header),
+      };
+    }
+    return {
+      type: 'false',
+    };
+  }
+
+  checkCondition(condition, value) {
+    switch (condition.type) {
+      case 'true':
+        return true;
+      case 'equal':
+        return value === condition.value;
+      case 'lessThan':
+        return value < condition.value;
+      case 'lessEqual':
+        return value <= condition.value;
+      case 'greaterThan':
+        return value > condition.value;
+      case 'greaterEqual':
+        return value >= condition.value;
+      case 'range':
+        return (
+          this.checkCondition(
+            { type: condition.typeLeft, value: condition.valueLeft },
+            value
+          ) &&
+          this.checkCondition(
+            { type: condition.typeRight, value: condition.valueRight },
+            value
+          )
+        );
+      default:
+        return false;
+    }
+  }
+
   build(table) {
     this.columnParams = [];
     this.rowParams = [];
@@ -83,7 +185,7 @@ class RulesTable {
       param.headers = [];
       currentLine = table[currentLineIndex];
       for (let j = this.columnParams.length; j < currentLine.length; j += 1) {
-        param.headers.push(currentLine[j]);
+        param.headers.push(RulesTable.compileCondition(param, currentLine[j]));
       }
       currentLineIndex += 1;
     }
@@ -91,7 +193,7 @@ class RulesTable {
       const param = this.columnParams[i];
       param.headers = [];
       for (let j = currentLineIndex; j < table.length; j += 1) {
-        param.headers.push(table[j][i]);
+        param.headers.push(RulesTable.compileCondition(param, table[j][i]));
       }
     }
     this.matrix = [];
@@ -103,67 +205,6 @@ class RulesTable {
         line.push(currentLine[j]);
       }
     }
-  }
-
-  static matchRange(header, value) {
-    if (header.startsWith('<=')) {
-      return value <= parseFloat(header.slice(2));
-    }
-    if (header.startsWith('>=')) {
-      return value >= parseFloat(header.slice(2));
-    }
-    if (header.startsWith('<')) {
-      return value < parseFloat(header.slice(1));
-    }
-    if (header.startsWith('>')) {
-      return value > parseFloat(header.slice(1));
-    }
-    if (header.startsWith('[') || header.startsWith('(')) {
-      const left = header[0];
-      const right = header[header.length - 1];
-      const values = header
-        .slice(1, header.length - 1)
-        .split('..')
-        .map((x) => parseFloat(x));
-      if (left === '(') {
-        if (value <= values[0]) {
-          return false;
-        }
-      }
-      if (left === '[') {
-        if (value < values[0]) {
-          return false;
-        }
-      }
-      if (right === ')') {
-        if (value >= values[1]) {
-          return false;
-        }
-      }
-      if (right === ']') {
-        if (value > values[1]) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return value === parseFloat(header);
-  }
-
-  static match(param, header, value) {
-    if (header === null) {
-      return true;
-    }
-    if (param.positionType === 'String') {
-      return header === value;
-    }
-    if (
-      param.positionType === 'IntRange' ||
-      param.positionType === 'DoubleRange'
-    ) {
-      return RulesTable.matchRange(header, value);
-    }
-    return false;
   }
 
   findRowIndexes(paramValues) {
@@ -180,7 +221,7 @@ class RulesTable {
       const currentMatchIndexes = [];
       for (let j = 0; j < matchIndexes.length; j += 1) {
         const index = matchIndexes[j];
-        if (RulesTable.match(param, param.headers[index], value)) {
+        if (this.checkCondition(param.headers[index], value)) {
           currentMatchIndexes.push(index);
         }
       }
@@ -205,7 +246,7 @@ class RulesTable {
       const currentMatchIndexes = [];
       for (let j = 0; j < matchIndexes.length; j += 1) {
         const index = matchIndexes[j];
-        if (RulesTable.match(param, param.headers[index], value)) {
+        if (this.checkCondition(param.headers[index], value)) {
           currentMatchIndexes.push(index);
         }
       }
