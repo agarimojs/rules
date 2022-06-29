@@ -54,6 +54,8 @@ class XBook {
     switch (tableType) {
       case 'Rules':
         return new RulesTable(this, table);
+      case 'Multi':
+        return new RulesTable(this, table, true);
       case 'Datatype':
         return new DatatypeTable(this, table);
       case 'Spreadsheet':
