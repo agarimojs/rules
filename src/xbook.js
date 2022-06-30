@@ -72,7 +72,11 @@ class XBook {
 
   async read(filename) {
     const workbook = new Excel.Workbook();
-    await workbook.xlsx.readFile(filename);
+    if (typeof filename === 'string') {
+      await workbook.xlsx.readFile(filename);
+    } else {
+      await workbook.xlsx.load(filename);
+    }
     workbook.eachSheet((worksheet) => {
       this.processSheet(worksheet);
     });
