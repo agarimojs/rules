@@ -1,4 +1,5 @@
 const { evaluate } = require('@agarimo/evaluator');
+const { toValue } = require('../book-utils');
 
 class RulesTable {
   constructor(parent, table, isMulti = false) {
@@ -157,7 +158,7 @@ class RulesTable {
     let currentLine = table[1];
     for (let i = 0; i < currentLine.length; i += 1) {
       const position = currentLine[i];
-      if (position) {
+      if (position && !position.startsWith('RET')) {
         const paramName = table[2][i];
         const paramType = table[3][i];
         if (paramName) {
@@ -177,6 +178,13 @@ class RulesTable {
         } else {
           this.resultType = paramType;
         }
+      } else if (position && position.startsWith('RET')) {
+        this.returnParam = {
+          name: 'RET',
+          type: table[3][i],
+          script: table[2][i],
+        };
+        console.log(this.returnParam);
       }
     }
     this.columnParams.sort((a, b) => a.position.index - b.position.index);
@@ -260,10 +268,20 @@ class RulesTable {
   }
 
   getValue(rowIndex, columnIndex) {
-    const value = this.matrix[rowIndex][columnIndex];
+    let value = this.matrix[rowIndex][columnIndex];
     if (value && typeof value === 'string' && value.trim().startsWith('=')) {
       const context = this.parent.buildContext();
-      return evaluate(value.trim().substring(1), context);
+      value = evaluate(value.trim().substring(1), context);
+    }
+    return toValue(this.returnParam.type, value);
+  }
+
+  getResult(rowIndex, columnIndex) {
+    const value = this.getValue(rowIndex, columnIndex);
+    if (this.returnParam.script) {
+      const context = this.parent.buildContext();
+      context.RET = value;
+      return evaluate(this.returnParam.script, context);
     }
     return value;
   }
@@ -275,7 +293,7 @@ class RulesTable {
       const results = new Set();
       for (let i = 0; i < rowIndexes.length; i += 1) {
         for (let j = 0; j < columnIndexes.length; j += 1) {
-          results.add(this.getValue(rowIndexes[i], columnIndexes[j]));
+          results.add(this.getResult(rowIndexes[i], columnIndexes[j]));
         }
       }
       return [...results];
@@ -283,7 +301,7 @@ class RulesTable {
     const rowIndex = rowIndexes[0];
     const columnIndex = columnIndexes[0];
     if (rowIndex >= 0 && columnIndex >= 0) {
-      return this.getValue(rowIndex, columnIndex);
+      return this.getResult(rowIndex, columnIndex);
     }
     return undefined;
   }
@@ -315,6 +333,7 @@ class RulesTable {
       columnParams: this.columnParams,
       rowParams: this.rowParams,
       matrix: this.matrix,
+      returnParam: this.returnParam,
     };
   }
 
@@ -327,6 +346,7 @@ class RulesTable {
     this.columnParams = data.columnParams;
     this.rowParams = data.rowParams;
     this.matrix = data.matrix;
+    this.returnParam = data.returnParam;
     this.paramsByName = {};
     for (let i = 0; i < this.params.length; i += 1) {
       const param = this.params[i];

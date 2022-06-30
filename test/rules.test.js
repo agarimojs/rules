@@ -1,7 +1,29 @@
+const fs = require('fs');
 const { XBook } = require('../src');
 
 describe('Rules', () => {
   it('should be able to load rules from excel and execute them in a context', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/rules.xlsx');
+    await book.read(buffer);
+    const spreadsheet = book.tablesByName.Calculate;
+    const person = {
+      title: 'Mr.',
+      name: 'John',
+      measure2: 27.2,
+      measure1: 'A',
+      measure3: 'Yes',
+    };
+    const result = spreadsheet.getFn()(person);
+    const expected = {
+      measure2Int: 27,
+      result1: ['A3', 'A4'],
+      result2: ['Yes3', 'Yes4'],
+      resultGlobal: ['A3', 'A4', 'Yes3', 'Yes4'],
+    };
+    expect(result).toEqual(expected);
+  });
+  it('should be able to load rules from buffer and execute them in a context', async () => {
     const book = new XBook();
     await book.read('./test/rules.xlsx');
     const spreadsheet = book.tablesByName.Calculate;
@@ -42,6 +64,14 @@ describe('Rules', () => {
       result2: ['Yes3', 'Yes4'],
       resultGlobal: ['A3', 'A4', 'Yes3', 'Yes4'],
     };
+    expect(result).toEqual(expected);
+  });
+  it('should be able to convert result to the RET type', async () => {
+    const book = new XBook();
+    await book.read('./test/rules.xlsx');
+    const rule = book.tablesByName.Rule3;
+    const result = rule.getFn()('B', 76);
+    const expected = 60;
     expect(result).toEqual(expected);
   });
   it('Should be able to process a Multi Rules table', async () => {
