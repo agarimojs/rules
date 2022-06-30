@@ -2,6 +2,7 @@ const Excel = require('exceljs');
 const RulesTable = require('./tables/rules-table');
 const DatatypeTable = require('./tables/datatype-table');
 const SpreadsheetTable = require('./tables/spreadsheet-table');
+const ConstantsTable = require('./tables/constants-table');
 const {
   coord2excel,
   getRect,
@@ -62,6 +63,8 @@ class XBook {
         return new SpreadsheetTable(this, table);
       case 'Method':
         return new MethodTable(this, table);
+      case 'Constants':
+        return new ConstantsTable(this, table);
       default:
         return undefined;
     }
@@ -83,6 +86,7 @@ class XBook {
         this.tablesByName[builtTable.name] = builtTable;
       }
     }
+    this.buildDefaultContext();
   }
 
   toJSON() {
@@ -101,6 +105,8 @@ class XBook {
         return new SpreadsheetTable(this);
       case 'MethodTable':
         return new MethodTable(this);
+      case 'ConstantsTable':
+        return new ConstantsTable(this);
       default:
         return undefined;
     }
@@ -120,6 +126,35 @@ class XBook {
         this.tables.push(current);
       }
     }
+    this.buildDefaultContext();
+  }
+
+  buildDefaultContext() {
+    this.defaultContext = {};
+    this.defaultContext.Math = Math;
+    this.defaultContext.console = console;
+    for (let i = 0; i < this.tables.length; i += 1) {
+      const table = this.tables[i];
+      if (table instanceof ConstantsTable) {
+        for (let j = 0; j < table.params.length; j += 1) {
+          const param = table.params[j];
+          this.defaultContext[param.name] = param.value;
+        }
+      } else if (table.name) {
+        this.defaultContext[table.name] = table.getFn ? table.getFn() : table;
+      }
+    }
+  }
+
+  buildContext(params, args) {
+    const context = { ...this.defaultContext };
+    if (params) {
+      for (let i = 0; i < params.length; i += 1) {
+        const { name } = params[i];
+        context[name] = args[i];
+      }
+    }
+    return context;
   }
 }
 

@@ -1,3 +1,5 @@
+const { evaluate } = require('@agarimo/evaluator');
+
 class RulesTable {
   constructor(parent, table, isMulti = false) {
     this.parent = parent;
@@ -257,6 +259,15 @@ class RulesTable {
     return matchIndexes;
   }
 
+  getValue(rowIndex, columnIndex) {
+    const value = this.matrix[rowIndex][columnIndex];
+    if (value && typeof value === 'string' && value.trim().startsWith('=')) {
+      const context = this.parent.buildContext();
+      return evaluate(value.trim().substring(1), context);
+    }
+    return value;
+  }
+
   executeContext(paramValues) {
     const rowIndexes = this.findRowIndexes(paramValues);
     const columnIndexes = this.findColumnIndexes(paramValues);
@@ -264,7 +275,7 @@ class RulesTable {
       const results = new Set();
       for (let i = 0; i < rowIndexes.length; i += 1) {
         for (let j = 0; j < columnIndexes.length; j += 1) {
-          results.add(this.matrix[rowIndexes[i]][columnIndexes[j]]);
+          results.add(this.getValue(rowIndexes[i], columnIndexes[j]));
         }
       }
       return [...results];
@@ -272,13 +283,13 @@ class RulesTable {
     const rowIndex = rowIndexes[0];
     const columnIndex = columnIndexes[0];
     if (rowIndex >= 0 && columnIndex >= 0) {
-      return this.matrix[rowIndex][columnIndex];
+      return this.getValue(rowIndex, columnIndex);
     }
     return undefined;
   }
 
   executeArray(paramValues) {
-    const context = {};
+    const context = this.parent.buildContext();
     for (let i = 0; i < this.params.length; i += 1) {
       context[this.params[i].name] = paramValues[i];
     }
