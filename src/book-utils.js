@@ -106,14 +106,14 @@ function getRect(sheet) {
 
 function getCellText(cell) {
   const { value } = cell;
-  if (typeof value === 'string' || value === null) {
-    return value;
+  if (value && value.richText) {
+    let result = '';
+    for (let i = 0; i < value.richText.length; i += 1) {
+      result += value.richText[i].text;
+    }
+    return result;
   }
-  let result = '';
-  for (let i = 0; i < value.richText.length; i += 1) {
-    result += value.richText[i].text;
-  }
-  return result;
+  return value;
 }
 
 function isEmptyRow(block, index) {
@@ -225,6 +225,22 @@ function splitBlock(block) {
   return [block];
 }
 
+function toValue(type, str) {
+  if (type === 'Integer') {
+    return parseInt(str, 10);
+  }
+  if (type === 'Float') {
+    return parseFloat(str);
+  }
+  if (type === 'boolean') {
+    return str === 'true';
+  }
+  if (type === 'Date') {
+    return new Date(str);
+  }
+  return str;
+}
+
 module.exports = {
   ALPHACHARS,
   isAlphaChar,
@@ -241,4 +257,5 @@ module.exports = {
   isEmptyColumn,
   findEmptyColumn,
   splitBlock,
+  toValue,
 };

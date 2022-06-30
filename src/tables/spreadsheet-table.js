@@ -39,24 +39,8 @@ class SpreadsheetTable {
     }
   }
 
-  buildContext(...args) {
-    const context = {};
-    const keys = Object.keys(this.parent.tablesByName);
-    for (let i = 0; i < keys.length; i += 1) {
-      const table = this.parent.tablesByName[keys[i]];
-      context[keys[i]] = table.getFn ? table.getFn() : table;
-    }
-    for (let i = 0; i < this.params.length; i += 1) {
-      const param = this.params[i].name;
-      context[param] = args[i];
-    }
-    context.Math = Math;
-    context.console = console;
-    return context;
-  }
-
   execute(...args) {
-    const context = this.buildContext(...args);
+    const context = this.parent.buildContext(this.params, args);
     const result = {};
     for (let i = 0; i < this.lines.length; i += 1) {
       evaluate(this.lines[i].script, context);
