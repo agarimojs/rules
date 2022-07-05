@@ -52,7 +52,11 @@ class RulesTable {
         value: header,
       };
     }
-    if (param.positionType === 'Integer' || param.positionType === 'Float') {
+    if (
+      param.positionType === 'Integer' ||
+      param.positionType === 'Float' ||
+      param.positionType === 'Double'
+    ) {
       return {
         type: 'equal',
         value: parseFloat(header),
@@ -60,7 +64,8 @@ class RulesTable {
     }
     if (
       param.positionType === 'IntRange' ||
-      param.positionType === 'FloatRange'
+      param.positionType === 'FloatRange' ||
+      param.positionType === 'DoubleRange'
     ) {
       if (header.startsWith('<=')) {
         return {
@@ -96,8 +101,8 @@ class RulesTable {
           .slice(1, header.length - 1)
           .split('..')
           .map((x) => parseFloat(x));
-        result.typeLeft = left === '[' ? 'greaterThan' : 'greaterEqual';
-        result.typeRight = right === ']' ? 'lessThan' : 'lessEqual';
+        result.typeLeft = left === '(' ? 'greaterThan' : 'greaterEqual';
+        result.typeRight = right === ')' ? 'lessThan' : 'lessEqual';
         result.valueLeft = parseFloat(values[0]);
         result.valueRight = parseFloat(values[1]);
         return result;
@@ -184,7 +189,6 @@ class RulesTable {
           type: table[3][i],
           script: table[2][i],
         };
-        console.log(this.returnParam);
       }
     }
     this.columnParams.sort((a, b) => a.position.index - b.position.index);
@@ -219,7 +223,7 @@ class RulesTable {
 
   findRowIndexes(paramValues) {
     if (this.columnParams.length === 0) {
-      return 0;
+      return [0];
     }
     let matchIndexes = [];
     for (let i = 0; i < this.columnParams[0].headers.length; i += 1) {
@@ -244,7 +248,7 @@ class RulesTable {
 
   findColumnIndexes(paramValues) {
     if (this.rowParams.length === 0) {
-      return 0;
+      return [0];
     }
     let matchIndexes = [];
     for (let i = 0; i < this.rowParams[0].headers.length; i += 1) {
@@ -287,8 +291,10 @@ class RulesTable {
   }
 
   executeContext(paramValues) {
-    const rowIndexes = this.findRowIndexes(paramValues);
-    const columnIndexes = this.findColumnIndexes(paramValues);
+    const rowIndexes =
+      this.columnParams.length > 0 ? this.findRowIndexes(paramValues) : [0];
+    const columnIndexes =
+      this.rowParams.length > 0 ? this.findColumnIndexes(paramValues) : [0];
     if (this.isMulti) {
       const results = new Set();
       for (let i = 0; i < rowIndexes.length; i += 1) {
