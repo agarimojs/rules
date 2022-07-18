@@ -43,7 +43,11 @@ class SpreadsheetTable {
     const context = this.parent.buildContext(this.params, args);
     const result = {};
     for (let i = 0; i < this.lines.length; i += 1) {
-      evaluate(this.lines[i].script, context);
+      try {
+        evaluate(this.lines[i].script, context);
+      } catch (err) {
+        console.log(`Error evaluating ${this.lines[i].script}`);
+      }
     }
     for (let i = 0; i < this.lines.length; i += 1) {
       result[this.lines[i].name] = context[`$${this.lines[i].name}`];

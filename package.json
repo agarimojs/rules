@@ -1,6 +1,6 @@
 {
   "name": "@agarimo/rules",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "OpenL-tablets like executor in javascript",
   "main": "src/index.js",
   "scripts": {
