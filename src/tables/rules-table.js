@@ -67,6 +67,12 @@ class RulesTable {
       param.positionType === 'FloatRange' ||
       param.positionType === 'DoubleRange'
     ) {
+      if (typeof header !== 'string') {
+        return {
+          type: 'equal',
+          value: header,
+        };
+      }
       if (header.startsWith('<=')) {
         return {
           type: 'lessEqual',
