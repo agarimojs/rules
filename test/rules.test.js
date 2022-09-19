@@ -139,4 +139,11 @@ describe('Rules', () => {
     result = fn('whatever', 27);
     expect(result).toEqual(['test', 'C']);
   });
+  it('should throw an error if rules contains twice the same rule', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/rules-repeated.xlsx');
+    await expect(book.read(buffer)).rejects.toMatchObject(
+      new Error('Table Rule3 was already defined')
+    );
+  });
 });

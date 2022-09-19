@@ -87,6 +87,9 @@ class XBook {
       const builtTable = this.buildTable(tableType, table);
       if (builtTable) {
         this.tables[i] = builtTable;
+        if (this.tablesByName[builtTable.name]) {
+          throw new Error(`Table ${builtTable.name} was already defined`);
+        }
         this.tablesByName[builtTable.name] = builtTable;
       }
     }
