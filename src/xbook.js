@@ -140,6 +140,7 @@ class XBook {
     this.defaultContext = {};
     this.defaultContext.Math = Math;
     this.defaultContext.console = console;
+    this.defaultContext.Date = Date;
     for (let i = 0; i < this.tables.length; i += 1) {
       const table = this.tables[i];
       if (table instanceof ConstantsTable) {
