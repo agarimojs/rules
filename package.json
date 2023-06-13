@@ -1,6 +1,6 @@
 {
   "name": "@agarimo/rules",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "OpenL-tablets like executor in javascript",
   "main": "src/index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@agarimo/evaluator": "^1.0.2",
+    "@agarimo/evaluator": "^1.0.3",
     "exceljs": "^4.3.0"
   }
 }
