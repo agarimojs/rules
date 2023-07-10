@@ -51,6 +51,14 @@ class SpreadsheetTable {
     }
     for (let i = 0; i < this.lines.length; i += 1) {
       result[this.lines[i].name] = context[`$${this.lines[i].name}`];
+      if (result[this.lines[i].name] === undefined) {
+        if (!result.errors) {
+          result.errors = [];
+        }
+        result.errors.push(
+          `Spreadsheet formula for "${this.lines[i].name}" seems to be wrong`
+        );
+      }
     }
     return result;
   }

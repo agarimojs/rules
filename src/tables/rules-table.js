@@ -153,6 +153,29 @@ class RulesTable {
     }
   }
 
+  checkCombinations(params) {
+    if (params.length === 0) {
+      return true;
+    }
+    const l = params[0].headers.length;
+    const keys = {};
+    for (let i = 0; i < l; i += 1) {
+      let key = '';
+      for (let j = 0; j < params.length; j += 1) {
+        key += JSON.stringify(params[j].headers[i]);
+      }
+      if (keys[key]) {
+        throw new Error(
+          `Duplicated combination at table ${this.name} (variables: ${params
+            .map((x) => x.name)
+            .join(', ')})`
+        );
+      }
+      keys[key] = true;
+    }
+    return true;
+  }
+
   build(table) {
     this.columnParams = [];
     this.rowParams = [];
@@ -225,6 +248,8 @@ class RulesTable {
         line.push(currentLine[j]);
       }
     }
+    this.checkCombinations(this.columnParams);
+    this.checkCombinations(this.rowParams);
   }
 
   findRowIndexes(paramValues) {
