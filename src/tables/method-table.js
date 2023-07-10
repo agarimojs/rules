@@ -20,7 +20,13 @@ class MethodTable {
 
   buildFn() {
     const context = this.parent.buildContext();
-    evaluate(this.script, context);
+    try {
+      evaluate(this.script, context);
+    } catch (e) {
+      throw new Error(
+        `Method "${this.name}" does not contains a valid javascript`
+      );
+    }
     this.fn = context[this.name];
   }
 

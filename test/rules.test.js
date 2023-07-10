@@ -146,4 +146,57 @@ describe('Rules', () => {
       new Error('Table Rule3 was already defined')
     );
   });
+  it('should throw an error if a non valid excel is provided', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/bad-rules.xlsx');
+    await expect(book.read(buffer)).rejects.toMatchObject(
+      new Error('Invalid excel file')
+    );
+  });
+  it('should throw an error if rules contains a wrong method', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/rules-bad-method.xlsx');
+    await expect(book.read(buffer)).rejects.toMatchObject(
+      new Error('Method "badMethod" does not contains a valid javascript')
+    );
+  });
+  it('should throw an error if spreadsheet references a non existing function', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/rules-bad-spreadsheet.xlsx');
+    await book.read(buffer);
+    const spreadsheet = book.tablesByName.Calculate;
+    const person = {
+      title: 'Mr.',
+      name: 'John',
+      measure2: 27.2,
+      measure1: 'A',
+      measure3: 'Yes',
+    };
+    const result = spreadsheet.getFn()(person);
+    const expected = {
+      measure2Int: 27,
+      result1: ['A3', 'A4'],
+      result2: ['Yes3', 'Yes4'],
+      result3: undefined,
+      resultGlobal: ['A3', 'A4', 'Yes3', 'Yes4'],
+      errors: ['Spreadsheet formula for "result3" seems to be wrong'],
+    };
+    expect(result).toEqual(expected);
+  });
+  it('should throw an error if a table contains two empty cells of same column', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/rules-two-empty-columns.xlsx');
+    await expect(book.read(buffer)).rejects.toMatchObject(
+      new Error('Duplicated combination at table Rule2 (variables: measure2)')
+    );
+  });
+  it('should throw an error if a table contains two repeated row combinations', async () => {
+    const book = new XBook();
+    const buffer = fs.readFileSync('./test/rules-repeated-combinations.xlsx');
+    await expect(book.read(buffer)).rejects.toMatchObject(
+      new Error(
+        'Duplicated combination at table Rule2 (variables: measure3, measure1)'
+      )
+    );
+  });
 });
