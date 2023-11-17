@@ -176,6 +176,23 @@ class RulesTable {
     return true;
   }
 
+  checkType(values) {
+    switch (this.type) {
+      case 'Double':
+      case 'Float':
+        if (
+          !values.every((v) => !Number.isNaN(parseFloat(v)) && !v.includes(','))
+        ) {
+          throw new Error(
+            `Table ${this.name} contains an invalid Double/Float value`
+          );
+        }
+        return true;
+      default:
+        return true;
+    }
+  }
+
   build(table) {
     this.columnParams = [];
     this.rowParams = [];
@@ -250,6 +267,7 @@ class RulesTable {
     }
     this.checkCombinations(this.columnParams);
     this.checkCombinations(this.rowParams);
+    this.checkType(this.matrix.flat().filter(Boolean));
   }
 
   findRowIndexes(paramValues) {
