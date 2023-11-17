@@ -181,7 +181,7 @@ class RulesTable {
       case 'Double':
       case 'Float':
         if (
-          !values.every((v) => !Number.isNaN(parseFloat(v)) && !v.includes(','))
+          values.some((v) => Number.isNaN(parseFloat(v)) || v.includes(','))
         ) {
           throw new Error(
             `Table ${this.name} contains an invalid Double/Float value`
