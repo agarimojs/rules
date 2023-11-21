@@ -199,4 +199,12 @@ describe('Rules', () => {
       )
     );
   });
+  it('should throw an error if a table contains a double separated by comma', async () => {
+    const book = new XBook();
+
+    const buffer = fs.readFileSync('./test/rules-with-doubles-comma.xlsx');
+    await expect(book.read(buffer)).rejects.toMatchObject(
+      new Error('Table Rule3 contains an invalid Double/Float value')
+    );
+  });
 });
