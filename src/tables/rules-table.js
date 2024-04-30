@@ -21,6 +21,7 @@ class RulesTable {
       const param = {
         name,
         type,
+        index: i,
       };
       this.params.push(param);
       this.paramsByName[name] = param;
@@ -181,7 +182,10 @@ class RulesTable {
       case 'Double':
       case 'Float':
         if (
-          values.some((v) => Number.isNaN(parseFloat(v)) || (v.includes && v.includes(',')))
+          values.some(
+            (v) =>
+              Number.isNaN(parseFloat(v)) || (v.includes && v.includes(','))
+          )
         ) {
           throw new Error(
             `Table ${this.name} contains an invalid Double/Float value`

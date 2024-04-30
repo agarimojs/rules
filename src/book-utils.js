@@ -229,7 +229,7 @@ function toValue(type, str) {
   if (type === 'Integer') {
     return parseInt(str, 10);
   }
-  if (type === 'Float') {
+  if (type === 'Float' || type === 'Double') {
     return parseFloat(str);
   }
   if (type === 'boolean') {
@@ -239,6 +239,40 @@ function toValue(type, str) {
     return new Date(str);
   }
   return str;
+}
+
+function isObject(x) {
+  return Object.prototype.toString.call(x) === '[object Object]';
+}
+
+function arrayEquals(a, b) {
+  if (a.length !== b.length) {
+    return false;
+  }
+  for (let i = 0; i < a.length; i += 1) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function sheetResultEquals(a, b) {
+  const keys = Object.keys(a);
+  for (let i = 0; i < keys.length; i += 1) {
+    const key = keys[i];
+    const aValue = a[key];
+    let bValue = b[key];
+    if (Array.isArray(a[key])) {
+      bValue = bValue.split(',').map((item) => item.trim());
+      if (!arrayEquals(aValue, bValue)) {
+        return false;
+      }
+    } else if (aValue !== bValue) {
+      return false;
+    }
+  }
+  return true;
 }
 
 module.exports = {
@@ -258,4 +292,7 @@ module.exports = {
   findEmptyColumn,
   splitBlock,
   toValue,
+  isObject,
+  arrayEquals,
+  sheetResultEquals,
 };

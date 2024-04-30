@@ -71,7 +71,7 @@ describe('Rules', () => {
     await book.read('./test/rules.xlsx');
     const rule = book.tablesByName.Rule3;
     const result = rule.getFn()('B', 76);
-    const expected = 60;
+    const expected = 60.6;
     expect(result).toEqual(expected);
   });
   it('Should be able to process a Multi Rules table', async () => {
