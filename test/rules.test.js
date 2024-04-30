@@ -207,4 +207,41 @@ describe('Rules', () => {
       new Error('Table Rule3 contains an invalid Double/Float value')
     );
   });
+  it('should return an error if one test has an incorrect case', async () => {
+    const book = new XBook();
+    await book.read('./test/rules-tests1.xlsx');
+    const expected = [
+      'Test Rule3TestInverted failed at row 2. Expected 3.2 but got 3.3',
+    ];
+    const actual = book.test();
+    expect(actual).toEqual(expected);
+  });
+  it('should return several errors if one test has several incorrect cases', async () => {
+    const book = new XBook();
+    await book.read('./test/rules-tests2.xlsx');
+    const expected = [
+      'Test Rule3TestInverted failed at row 2. Expected 3.2 but got 3.3',
+      'Test Rule3TestInverted failed at row 3. Expected 5.3 but got 5.5',
+    ];
+    const actual = book.test();
+    expect(actual).toEqual(expected);
+  });
+  it('should return several errors if several tests has several incorrect cases', async () => {
+    const book = new XBook();
+    await book.read('./test/rules-tests3.xlsx');
+    const expected = [
+      'Test Rule3TestInverted failed at row 2. Expected 3.2 but got 3.3',
+      'Test Rule3TestInverted failed at row 3. Expected 5.3 but got 5.5',
+      'Test Rule3Test failed at row 2. Expected something but got 3.3',
+    ];
+    const actual = book.test();
+    expect(actual).toEqual(expected);
+  });
+  it('should pass all tests if all are correct', async () => {
+    const book = new XBook();
+    await book.read('./test/rules.xlsx');
+    const expected = [];
+    const actual = book.test();
+    expect(actual).toEqual(expected);
+  });
 });

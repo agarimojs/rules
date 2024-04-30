@@ -101,7 +101,6 @@ class XBook {
       }
     }
     this.buildDefaultContext();
-    this.runTests();
   }
 
   toJSON() {
@@ -175,7 +174,7 @@ class XBook {
     return context;
   }
 
-  runTests() {
+  test() {
     const testTables = this.tables.filter(
       (table) => table instanceof TestTable
     );
@@ -185,9 +184,7 @@ class XBook {
       const currentErrors = testTable.run();
       errors.push(...currentErrors);
     }
-    if (errors.length > 0) {
-      throw new Error(errors.join('\n'));
-    }
+    return errors;
   }
 }
 

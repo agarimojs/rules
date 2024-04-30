@@ -49,22 +49,33 @@ class TestTable {
   buildOutput(refTable, data) {
     const constructorName = refTable.constructor.name;
     if (constructorName === 'RulesTable') {
-      const str = data.slice(-1)[0];
+      const raw = data.slice(-1)[0];
+      let value;
       if (refTable.isMulti) {
-        const arr = str.split(',').map((item) => item.trim());
-        return arr.map((item) => toValue(refTable.returnParam.type, item));
+        const arr = raw.split(',').map((item) => item.trim());
+        value = arr.map((item) => toValue(refTable.returnParam.type, item));
+      } else {
+        value = toValue(refTable.returnParam.type, raw);
       }
-      return toValue(refTable.returnParam.type, str);
+      return {
+        raw,
+        value,
+      };
     }
     if (constructorName === 'SpreadsheetTable') {
-      const result = {};
+      const value = {};
+      let raw = ``;
       for (let i = 0; i < this.paramNames.length; i += 1) {
         const name = this.paramNames[i];
         if (name.startsWith('RET.')) {
-          result[name.slice(4)] = data[i];
+          value[name.slice(4)] = data[i];
+          raw = `${raw}${data[i]}, `;
         }
       }
-      return result;
+      return {
+        raw,
+        value,
+      };
     }
     return undefined;
   }
@@ -82,28 +93,26 @@ class TestTable {
       const expected = this.buildOutput(refTable, this.data[i]);
       const actual = fn(...input);
       if (Array.isArray(actual)) {
-        if (!arrayEquals(actual, expected)) {
+        if (!arrayEquals(actual, expected.value)) {
           errors.push(
-            `Test ${this.name} failed at row ${i + 1}. Expected ${expected.join(
-              ''
-            )} but got ${actual.join('')}`
+            `Test ${this.name} failed at row ${i + 1}. Expected ${
+              expected.raw
+            } but got ${actual.join(', ')}`
           );
         }
       } else if (isObject(actual)) {
-        if (!sheetResultEquals(actual, expected)) {
+        if (!sheetResultEquals(actual, expected.value)) {
           errors.push(
-            `Test ${this.name} failed at row ${
-              i + 1
-            }. Expected ${JSON.stringify(expected)} but got ${JSON.stringify(
-              actual
-            )}`
+            `Test ${this.name} failed at row ${i + 1}. Expected ${
+              expected.raw
+            } but got ${JSON.stringify(actual)}`
           );
         }
-      } else if (actual !== expected) {
+      } else if (actual !== expected.value) {
         errors.push(
-          `Test ${this.name} failed at row ${
-            i + 1
-          }. Expected ${expected} but got ${actual}`
+          `Test ${this.name} failed at row ${i + 1}. Expected ${
+            expected.raw
+          } but got ${actual}`
         );
       }
     }
