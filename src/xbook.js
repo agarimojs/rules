@@ -10,6 +10,7 @@ const {
   splitBlock,
 } = require('./book-utils');
 const MethodTable = require('./tables/method-table');
+const TestTable = require('./tables/test-table');
 
 class XBook {
   constructor() {
@@ -65,6 +66,8 @@ class XBook {
         return new MethodTable(this, table);
       case 'Constants':
         return new ConstantsTable(this, table);
+      case 'Test':
+        return new TestTable(this, table);
       default:
         return undefined;
     }
@@ -118,6 +121,8 @@ class XBook {
         return new MethodTable(this);
       case 'ConstantsTable':
         return new ConstantsTable(this);
+      case 'TestTable':
+        return new TestTable(this);
       default:
         return undefined;
     }
@@ -167,6 +172,19 @@ class XBook {
       }
     }
     return context;
+  }
+
+  test() {
+    const testTables = this.tables.filter(
+      (table) => table instanceof TestTable
+    );
+    const errors = [];
+    for (let i = 0; i < testTables.length; i += 1) {
+      const testTable = testTables[i];
+      const currentErrors = testTable.run();
+      errors.push(...currentErrors);
+    }
+    return errors;
   }
 }
 
