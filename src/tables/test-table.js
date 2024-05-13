@@ -26,7 +26,9 @@ class TestTable {
       const result = new Array(this.paramNames.length - 1);
       for (let i = 0; i < this.paramNames.length - 1; i += 1) {
         if (refTable?.paramsByName[this.paramNames[i]]?.index === undefined) {
-          throw new Error(`Param ${this.paramNames[i]} not found in ${refTable.name}`);
+          throw new Error(
+            `Param ${this.paramNames[i]} not found in ${refTable.name}`
+          );
         }
         const { index } = refTable.paramsByName[this.paramNames[i]];
         result[index] = data[i];
