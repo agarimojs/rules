@@ -89,6 +89,8 @@ class XBook {
     });
     for (let i = 0; i < this.tables.length; i += 1) {
       const table = this.tables[i];
+      // eslint-disable-next-line no-continue
+      if (table.length === 0) continue;
       const title = table[0][0].trim();
       const tableType = title.split(' ')[0].trim();
       const builtTable = this.buildTable(tableType, table);
