@@ -8,6 +8,8 @@ const {
   getRect,
   getCellText,
   splitBlock,
+  isNumber,
+  isInteger,
 } = require('./book-utils');
 const MethodTable = require('./tables/method-table');
 const TestTable = require('./tables/test-table');
@@ -176,11 +178,39 @@ class XBook {
     return context;
   }
 
+  checkReturns() {
+    const tables = this.tables.filter((table) => table instanceof RulesTable);
+    const errors = [];
+    for (let i = 0; i < tables.length; i += 1) {
+      const table = tables[i];
+      const returnType = table.returnParam?.type;
+      if (['Integer', 'Float', 'Double'].includes(returnType)) {
+        const values = table.matrix.flat();
+        for (let j = 0; j < values.length; j += 1) {
+          if (values[j]) {
+            if (returnType === 'Integer' && !isInteger(values[j])) {
+              errors.push(
+                `Table ${table.name} has return type Integer but it contains non-integer values`
+              );
+              break;
+            } else if (!isNumber(values[j])) {
+              errors.push(
+                `Table ${table.name} has return type ${table.returnParam.type} but it contains non-float values (e.g.: ${values[j]})`
+              );
+              break;
+            }
+          }
+        }
+      }
+    }
+    return errors;
+  }
+
   test() {
     const testTables = this.tables.filter(
       (table) => table instanceof TestTable
     );
-    const errors = [];
+    const errors = this.checkReturns();
     for (let i = 0; i < testTables.length; i += 1) {
       const testTable = testTables[i];
       const currentErrors = testTable.run();

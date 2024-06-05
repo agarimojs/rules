@@ -225,11 +225,25 @@ function splitBlock(block) {
   return [block];
 }
 
+function isNumber(str) {
+  return !Number.isNaN(Number(str));
+}
+
+function isInteger(str) {
+  return Number.isInteger(Number(str));
+}
+
 function toValue(type, str) {
   if (type === 'Integer') {
+    if (!isInteger(str)) {
+      throw new Error(`Invalid Integer ${str}`);
+    }
     return parseInt(str, 10);
   }
   if (type === 'Float' || type === 'Double') {
+    if (!isNumber(str)) {
+      throw new Error(`Invalid Float/Double ${str}`);
+    }
     return parseFloat(str);
   }
   if (type === 'boolean') {
@@ -293,6 +307,8 @@ module.exports = {
   splitBlock,
   toValue,
   isObject,
+  isNumber,
+  isInteger,
   arrayEquals,
   sheetResultEquals,
 };
