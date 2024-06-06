@@ -74,6 +74,13 @@ describe('Rules', () => {
     const expected = 60.6;
     expect(result).toEqual(expected);
   });
+  it('should be able to check that the returned value belongs to RET type domain', async () => {
+    const book = new XBook();
+    await book.read('./test/rules-bad-doubles.xlsx');
+    const rule = book.tablesByName.Rule4;
+    const action = () => rule.getFn()('B', 51);
+    expect(action).toThrow('Invalid Float/Double 40-50');
+  });
   it('Should be able to process a Multi Rules table', async () => {
     const book = new XBook();
     await book.read('./test/rules.xlsx');
@@ -232,7 +239,7 @@ describe('Rules', () => {
     const expected = [
       'Test Rule3TestInverted failed at row 2. Expected 3.2 but got 3.3',
       'Test Rule3TestInverted failed at row 3. Expected 5.3 but got 5.5',
-      'Test Rule3Test failed at row 2. Expected something but got 3.3',
+      'Test Rule3Test failed at row 2. Expected 100 but got 3.3',
     ];
     const actual = book.test();
     expect(actual).toEqual(expected);
@@ -241,6 +248,15 @@ describe('Rules', () => {
     const book = new XBook();
     await book.read('./test/rules.xlsx');
     const expected = [];
+    const actual = book.test();
+    expect(actual).toEqual(expected);
+  });
+  it('Should return error if a Table has values that not match the return type', async () => {
+    const book = new XBook();
+    await book.read('./test/rules-bad-doubles.xlsx');
+    const expected = [
+      'Table Rule4 has return type Double but it contains non-float values (e.g.: 20-30)',
+    ];
     const actual = book.test();
     expect(actual).toEqual(expected);
   });
