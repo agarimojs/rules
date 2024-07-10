@@ -220,7 +220,7 @@ describe('Rules', () => {
     const expected = [
       'Test Rule3TestInverted failed at row 2. Expected 3.2 but got 3.3',
     ];
-    const actual = book.test();
+    const actual = await book.test();
     expect(actual).toEqual(expected);
   });
   it('should return several errors if one test has several incorrect cases', async () => {
@@ -230,7 +230,7 @@ describe('Rules', () => {
       'Test Rule3TestInverted failed at row 2. Expected 3.2 but got 3.3',
       'Test Rule3TestInverted failed at row 3. Expected 5.3 but got 5.5',
     ];
-    const actual = book.test();
+    const actual = await book.test();
     expect(actual).toEqual(expected);
   });
   it('should return several errors if several tests has several incorrect cases', async () => {
@@ -241,14 +241,14 @@ describe('Rules', () => {
       'Test Rule3TestInverted failed at row 3. Expected 5.3 but got 5.5',
       'Test Rule3Test failed at row 2. Expected 100 but got 3.3',
     ];
-    const actual = book.test();
+    const actual = await book.test();
     expect(actual).toEqual(expected);
   });
   it('should pass all tests if all are correct', async () => {
     const book = new XBook();
     await book.read('./test/rules.xlsx');
     const expected = [];
-    const actual = book.test();
+    const actual = await book.test({ RuleCheck: () => [] });
     expect(actual).toEqual(expected);
   });
   it('Should return error if a Table has values that not match the return type', async () => {
@@ -257,7 +257,29 @@ describe('Rules', () => {
     const expected = [
       'Table Rule4 has return type Double but it contains non-float values (e.g.: 20-30)',
     ];
-    const actual = book.test();
+    const actual = await book.test();
+    expect(actual).toEqual(expected);
+  });
+  it('should execute checks', async () => {
+    const book = new XBook();
+    await book.read('./test/rules.xlsx');
+    const checkFunction = (items, tableName, checkName) =>
+      items
+        .filter((item) => item.startsWith('B'))
+        .map(
+          (item) =>
+            `Item ${item} not found in ${tableName} from Check ${checkName}`
+        );
+    const expected = [
+      'Item B1 not found in Rule1 from Check RuleCheck',
+      'Item B2 not found in Rule1 from Check RuleCheck',
+      'Item B3 not found in Rule1 from Check RuleCheck',
+      'Item B4 not found in Rule1 from Check RuleCheck',
+      'Item B5 not found in Rule1 from Check RuleCheck',
+      'Item B6 not found in Rule1 from Check RuleCheck',
+      'Item B7 not found in Rule1 from Check RuleCheck',
+    ];
+    const actual = await book.test({ RuleCheck: checkFunction });
     expect(actual).toEqual(expected);
   });
 });
