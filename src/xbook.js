@@ -13,6 +13,7 @@ const {
 } = require('./book-utils');
 const MethodTable = require('./tables/method-table');
 const TestTable = require('./tables/test-table');
+const CheckTable = require('./tables/check-table');
 
 class XBook {
   constructor() {
@@ -70,6 +71,8 @@ class XBook {
         return new ConstantsTable(this, table);
       case 'Test':
         return new TestTable(this, table);
+      case 'Check':
+        return new CheckTable(this, table);
       default:
         return undefined;
     }
@@ -127,6 +130,8 @@ class XBook {
         return new ConstantsTable(this);
       case 'TestTable':
         return new TestTable(this);
+      case 'CheckTable':
+        return new CheckTable(this);
       default:
         return undefined;
     }
@@ -206,7 +211,43 @@ class XBook {
     return errors;
   }
 
-  test() {
+  async executeCheckTables(checkFunctions) {
+    const tables = this.tables.filter((table) => table instanceof CheckTable);
+    const errors = [];
+    for (let i = 0; i < tables.length; i += 1) {
+      const table = tables[i];
+      const checkFunction = checkFunctions[table.name];
+      if (checkFunction) {
+        for (let j = 0; j < table.tableNames.length; j += 1) {
+          const tableName = table.tableNames[j];
+          const refTable = this.tablesByName[tableName];
+          if (!refTable) {
+            errors.push(
+              `Table ${tableName} from Check Table ${table.name} not found`
+            );
+            // eslint-disable-next-line no-continue
+            continue;
+          }
+          const items = refTable.matrix
+            .flat()
+            .map((item) => item.split('\n'))
+            .flat();
+          // eslint-disable-next-line no-await-in-loop
+          const currentErrors = await checkFunction(
+            items,
+            refTable.name,
+            table.name
+          );
+          errors.push(...currentErrors);
+        }
+      } else {
+        errors.push(`Check function for Check Table "${table.name}" not found`);
+      }
+    }
+    return errors;
+  }
+
+  async test(checkFunctions = {}) {
     const testTables = this.tables.filter(
       (table) => table instanceof TestTable
     );
@@ -216,6 +257,8 @@ class XBook {
       const currentErrors = testTable.run();
       errors.push(...currentErrors);
     }
+    const checkErrors = await this.executeCheckTables(checkFunctions);
+    errors.push(...checkErrors);
     return errors;
   }
 }
