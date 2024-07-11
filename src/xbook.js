@@ -230,6 +230,7 @@ class XBook {
           }
           const items = refTable.matrix
             .flat()
+            .filter((item) => item)
             .map((item) => item.split('\n'))
             .flat();
           // eslint-disable-next-line no-await-in-loop
