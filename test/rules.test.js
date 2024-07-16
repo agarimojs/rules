@@ -282,4 +282,12 @@ describe('Rules', () => {
     const actual = await book.test({ RuleCheck: checkFunction });
     expect(actual).toEqual(expected);
   });
+  it('Should check that arguments have a corresponding header', async () => {
+    const book = new XBook();
+    await book.read('./test/rules-bad-headers.xlsx');
+    const errors = await book.test();
+    expect(errors).toEqual([
+      'Table Rule4 has argument measure2 without a header',
+    ]);
+  });
 });
