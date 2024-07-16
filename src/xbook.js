@@ -248,11 +248,30 @@ class XBook {
     return errors;
   }
 
+  checkParams() {
+    const tables = this.tables.filter((table) => table instanceof RulesTable);
+    const errors = [];
+    for (let i = 0; i < tables.length; i += 1) {
+      const table = tables[i];
+      for (let j = 0; j < table.params.length; j += 1) {
+        const param = table.params[j];
+        if (!param.position) {
+          errors.push(
+            `Table ${table.name} has argument ${param.name} without a header`
+          );
+        }
+      }
+    }
+    return errors;
+  }
+
   async test(checkFunctions = {}) {
     const testTables = this.tables.filter(
       (table) => table instanceof TestTable
     );
     const errors = this.checkReturns();
+    const paramErrors = this.checkParams();
+    errors.push(...paramErrors);
     for (let i = 0; i < testTables.length; i += 1) {
       const testTable = testTables[i];
       const currentErrors = testTable.run();
