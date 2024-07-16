@@ -325,7 +325,7 @@ class RulesTable {
   }
 
   getValue(rowIndex, columnIndex) {
-    let value = this.matrix[rowIndex][columnIndex];
+    let value = this.matrix[rowIndex]?.[columnIndex] || '';
     if (value && typeof value === 'string' && value.trim().startsWith('=')) {
       const context = this.parent.buildContext();
       value = evaluate(value.trim().substring(1), context);
