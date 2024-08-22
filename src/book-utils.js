@@ -252,6 +252,16 @@ function toValue(type, str) {
   if (type === 'Date') {
     return new Date(str);
   }
+  if (type === 'code') {
+    return str ? str.trim() : str;
+  }
+  if (type === 'codes') {
+    if (!str) {
+      return [];
+    }
+    const splitted = str.split(/\r?[\n,]/);
+    return splitted.map((item) => item.trim()).filter((item) => item);
+  }
   return str;
 }
 

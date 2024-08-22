@@ -290,4 +290,37 @@ describe('Rules', () => {
       'Table Rule4 has argument measure2 without a header',
     ]);
   });
+  it('should be able to convert result to the RET type codes', async () => {
+    const book = new XBook();
+    await book.read('./test/rules.xlsx');
+    const rule = book.tablesByName.Rule4;
+    const fn = rule.getFn();
+    const result1 = fn('No', 'A', 23);
+    const expected1 = ['NoA1', 'NoA2'];
+    expect(result1).toEqual(expected1);
+    const result2 = fn('No', 'B', 23);
+    const expected2 = ['NoB1'];
+    expect(result2).toEqual(expected2);
+    const result3 = fn('Yes', 'C', 23);
+    const expected3 = [];
+    expect(result3).toEqual(expected3);
+    const result4 = fn('No', 'A', 26);
+    const expected4 = ['NoA3', 'NoA4', 'NoA5'];
+    expect(result4).toEqual(expected4);
+  });
+  it('should be able to convert result to the RET type code', async () => {
+    const book = new XBook();
+    await book.read('./test/rules.xlsx');
+    const rule = book.tablesByName.Rule5;
+    const fn = rule.getFn();
+    const result1 = fn('No', 'A', 23);
+    const expected1 = 'NoA1';
+    expect(result1).toEqual(expected1);
+    const result2 = fn('No', 'B', 23);
+    const expected2 = 'NoB1';
+    expect(result2).toEqual(expected2);
+    const result3 = fn('No', 'A', 26);
+    const expected3 = 'NoA3,NoA4NoA5';
+    expect(result3).toEqual(expected3);
+  });
 });
