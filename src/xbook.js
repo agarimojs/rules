@@ -10,6 +10,7 @@ const {
   splitBlock,
   isNumber,
   isInteger,
+  toValue,
 } = require('./book-utils');
 const MethodTable = require('./tables/method-table');
 const TestTable = require('./tables/test-table');
@@ -228,10 +229,14 @@ class XBook {
             // eslint-disable-next-line no-continue
             continue;
           }
+
           const items = refTable.matrix
             .flat()
             .filter((item) => item)
-            .map((item) => item.split('\n'))
+            .map((item) => {
+              const value = toValue(refTable.returnParam?.type, item);
+              return Array.isArray(value) ? value : value.split('\n');
+            })
             .flat();
           // eslint-disable-next-line no-await-in-loop
           const currentErrors = await checkFunction(

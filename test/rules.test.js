@@ -320,7 +320,23 @@ describe('Rules', () => {
     const expected2 = 'NoB1';
     expect(result2).toEqual(expected2);
     const result3 = fn('No', 'A', 26);
-    const expected3 = 'NoA3,NoA4NoA5';
+    const expected3 = 'NoA3';
     expect(result3).toEqual(expected3);
+  });
+  it('should be able to check if the table RET type is code or codes', async () => {
+    const products = {};
+    for (let i = 1; i <= 9; i += 1) {
+      products[`A${i}`] = true;
+      products[`B${i}`] = true;
+      products[`NoA${i}`] = true;
+      products[`NoB${i}`] = true;
+      products[`Yes${i}`] = true;
+    }
+    const checkItems = (items) =>
+      items.filter((i) => !products[i]).map((i) => `Item ${i} not found`);
+    const book = new XBook();
+    await book.read('./test/rules.xlsx');
+    const actual = await book.test({ RuleCheck: checkItems });
+    expect(actual).toEqual([]);
   });
 });
